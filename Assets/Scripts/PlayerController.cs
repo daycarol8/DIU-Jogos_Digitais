@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class PlayerMovement : MonoBehaviour
+public class PlayerController : MonoBehaviour
 {
     private float horizontal;
 
@@ -116,7 +116,7 @@ public class PlayerMovement : MonoBehaviour
 
         foreach (Collider2D enemyGameObject in enemy){
             Debug.Log("Hit");
-            enemyGameObject.GetComponent<EnemyPatrol>().health -= 1;
+            enemyGameObject.GetComponent<EnemyController>().health -= 1;
         }
     }
 

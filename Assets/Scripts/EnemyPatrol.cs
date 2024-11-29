@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class EnemyPatrol : MonoBehaviour
+public class EnemyController : MonoBehaviour
 {
     [SerializeField] private GameObject pointA, pointB;
     private Rigidbody2D rb;
