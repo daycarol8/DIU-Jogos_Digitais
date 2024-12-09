@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
@@ -30,6 +31,12 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float radius;
 
     private bool isInvunerable = false;
+
+    [SerializeField] private float health;
+
+    private void Start() {
+        health = 1;
+    }
 
     private void Update()
     {
@@ -63,6 +70,10 @@ public class PlayerController : MonoBehaviour
         }
 
         Flip();
+
+        if(health <= 0){
+          SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
     }
 
     private void FixedUpdate()
@@ -93,6 +104,7 @@ public class PlayerController : MonoBehaviour
 
     private IEnumerator Dash()
     {
+        Physics2D.IgnoreLayerCollision(8,7, true);
         isInvunerable = true;
         canDash = false;
         isDashing = true;
@@ -104,6 +116,7 @@ public class PlayerController : MonoBehaviour
         anim.SetBool("isDashing", false);
         rb.gravityScale = originalGravity;
         isDashing = false;
+        Physics2D.IgnoreLayerCollision(8,7, false);
         yield return new WaitForSeconds(dashingCooldown);
         canDash = true;
         isInvunerable = false;
@@ -115,7 +128,6 @@ public class PlayerController : MonoBehaviour
         Collider2D[] enemy = Physics2D.OverlapCircleAll(attackPoint.transform.position, radius, enemiesLayer);
 
         foreach (Collider2D enemyGameObject in enemy){
-            Debug.Log("Hit");
             enemyGameObject.GetComponent<EnemyController>().health -= 1;
         }
     }
@@ -133,6 +145,7 @@ public class PlayerController : MonoBehaviour
     private void OnCollisionEnter2D(Collision2D other) {
         if (isInvunerable == false && other.gameObject.CompareTag("Enemy")){
             anim.SetTrigger("Damage");
+            health--;
         }
     }
 }
