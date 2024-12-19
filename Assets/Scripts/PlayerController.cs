@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
@@ -27,15 +28,20 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField] private Animator anim;
 
-    [SerializeField] private GameObject attackPoint;
+    [SerializeField] private GameObject attackPoint, gameManager;
     [SerializeField] private float radius;
 
     private bool isInvunerable = false;
 
     [SerializeField] private float health;
+    [SerializeField] private Image healthBar;
+    [SerializeField] private float dashAmount;
+    [SerializeField] private Image dashBar;
 
     private void Start() {
-        health = 1;
+        health = 100;
+        dashAmount = 100;
+        Time.timeScale = 1;
     }
 
     private void Update()
@@ -44,6 +50,12 @@ public class PlayerController : MonoBehaviour
         if (isDashing)
         {
             return;
+        }
+
+        if (dashAmount <=0){
+            canDash = false;
+        } else{
+            canDash = true;
         }
 
         horizontal = Input.GetAxisRaw("Horizontal");
@@ -72,7 +84,8 @@ public class PlayerController : MonoBehaviour
         Flip();
 
         if(health <= 0){
-          SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+          //SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+          gameManager.GetComponent<GameManager>().GameOver();
         }
     }
 
@@ -104,6 +117,8 @@ public class PlayerController : MonoBehaviour
 
     private IEnumerator Dash()
     {
+        dashAmount-= 20;
+        dashBar.fillAmount = dashAmount / 100f;
         Physics2D.IgnoreLayerCollision(8,7, true);
         isInvunerable = true;
         canDash = false;
@@ -128,7 +143,13 @@ public class PlayerController : MonoBehaviour
         Collider2D[] enemy = Physics2D.OverlapCircleAll(attackPoint.transform.position, radius, enemiesLayer);
 
         foreach (Collider2D enemyGameObject in enemy){
-            enemyGameObject.GetComponent<EnemyController>().health -= 1;
+            if(enemyGameObject.GetComponent<EnemyController>() != null){
+                enemyGameObject.GetComponent<EnemyController>().health -= 1;
+            } else {
+                enemyGameObject.gameObject.GetComponent<EnemyFollow>().health -= 1;
+                Destroy(enemyGameObject.gameObject);
+            }
+            
         }
     }
 
@@ -145,7 +166,22 @@ public class PlayerController : MonoBehaviour
     private void OnCollisionEnter2D(Collision2D other) {
         if (isInvunerable == false && other.gameObject.CompareTag("Enemy")){
             anim.SetTrigger("Damage");
-            health--;
+            health-= 20;
+            healthBar.fillAmount = health / 100f;
+        }
+        if(other.gameObject.CompareTag("Hollow")){
+            anim.SetTrigger("Damage");
+            health-= health;
+            healthBar.fillAmount = health / 100f;
+        }
+    }
+
+    private void OnTriggerEnter2D(Collider2D other) {
+        if (other.gameObject.CompareTag("Potion") && dashAmount < 100){
+            dashAmount += 20;
+            dashAmount = Mathf.Clamp(dashAmount, 0, 100);
+            dashBar.fillAmount = dashAmount/100;
+            other.gameObject.SetActive(false);
         }
     }
 }

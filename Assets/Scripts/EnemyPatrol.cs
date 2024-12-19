@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class EnemyController : MonoBehaviour
 {
-    [SerializeField] private GameObject pointA, pointB;
+    [SerializeField] private GameObject pointA, pointB, spawnPoint;
     private Rigidbody2D rb;
     private Animator anim;
     private Transform currentPoint;
@@ -10,6 +10,8 @@ public class EnemyController : MonoBehaviour
 
     public float health;
     public float currentHealth;
+
+    private float fullLife = 1;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -59,5 +61,22 @@ public class EnemyController : MonoBehaviour
 
     public void Dead(){
         this.gameObject.SetActive(false);
+        fullLife++;
+        Invoke("Respawn", 5);
+    }
+
+    private void OnDrawGizmos(){
+        Gizmos.DrawWireSphere(pointA.transform.position, 0.2f);
+        Gizmos.DrawWireSphere(pointB.transform.position, 0.2f);
+        Gizmos.DrawWireSphere(spawnPoint.transform.position, 0.2f);
+    }
+
+    void Respawn(){
+        gameObject.transform.position = spawnPoint.transform.position;
+        
+        this.gameObject.SetActive(true);
+        anim.SetBool("isDead", false);
+        currentHealth = fullLife;
+        health = fullLife;
     }
 }
